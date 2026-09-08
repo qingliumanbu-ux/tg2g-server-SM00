@@ -118,8 +118,19 @@ int  f_sm00_plan_mat(EIClass * bcls_rec, EIClass * bcls_ret, CDbConnection * con
 					"                      OR  A.STOCK_NO = '" + c_stock_no + "' ) ";
 
 				//liguangyuan update 20230818
-				sqlstr = " SELECT DECODE(TRIM(A.BILL_OF_LADING_NO),'',A.BILL_OF_LADING_NO_1,A.BILL_OF_LADING_NO) AS BILL_OF_LADING_NO,"
-					" DECODE(A.ORDER_NO_1,NULL,B.ORDER_NO,A.ORDER_NO_1) AS ORDER_NO,"
+// DM8 适配 CHANGE-266:查询。空值搜索 DECODE 改为标准 CASE。
+// 改写原因：空值搜索 DECODE 改为标准 CASE,不依赖 NULL 相等匹配的未记载语义；依据 DM 官方文档,DM8 尚未实测。
+// 本共用分支面向 DM8,其他 DB_KIND 标签也会执行此 SQL;参数、结果列、条件与排序保持不变。
+// 原 SQL（完整保留）：
+				// sqlstr = " SELECT DECODE(TRIM(A.BILL_OF_LADING_NO),'',A.BILL_OF_LADING_NO_1,A.BILL_OF_LADING_NO) AS BILL_OF_LADING_NO,"
+					// " DECODE(A.ORDER_NO_1,NULL,B.ORDER_NO,A.ORDER_NO_1) AS ORDER_NO,"
+					// " A.OLD_ORDER_NO,A.PROD_CNAME,A.RED_FLAG,"
+					// " (CASE WHEN B.MAT_SHAPE_FLAG='7' THEN B.LAYERNO || B.ROWNO || B.COLUMN_NO ELSE B.LAYERNO || B.COLUMN_NO END) STOCK_PLACE_POSITION ,"
+					// " B.* "
+				// " FROM "+ table_name +" B ,(" + sqlstr1 + ") A WHERE B.MAT_NO = A.MAT_NO ";
+// DM8 SQL：
+				sqlstr = " SELECT CASE WHEN TRIM(A.BILL_OF_LADING_NO) IS NULL OR TRIM(A.BILL_OF_LADING_NO) = '' THEN A.BILL_OF_LADING_NO_1 ELSE A.BILL_OF_LADING_NO END AS BILL_OF_LADING_NO,"
+					" CASE WHEN A.ORDER_NO_1 IS NULL THEN B.ORDER_NO ELSE A.ORDER_NO_1 END AS ORDER_NO,"
 					" A.OLD_ORDER_NO,A.PROD_CNAME,A.RED_FLAG,"
 					" (CASE WHEN B.MAT_SHAPE_FLAG='7' THEN B.LAYERNO || B.ROWNO || B.COLUMN_NO ELSE B.LAYERNO || B.COLUMN_NO END) STOCK_PLACE_POSITION ,"
 					" B.* "
@@ -167,8 +178,19 @@ int  f_sm00_plan_mat(EIClass * bcls_rec, EIClass * bcls_ret, CDbConnection * con
 					" AND   (A.STOCK_NO     IN  (SELECT STOCK_NO FROM TSI0021 WHERE STOCK_ADDR = '" + c_stock_no + "') "
 					"                      OR  A.STOCK_NO = '" + c_stock_no + "' ) ";
 
-				sqlstr = " SELECT DECODE(TRIM(A.BILL_OF_LADING_NO),'',A.BILL_OF_LADING_NO_1,A.BILL_OF_LADING_NO) AS BILL_OF_LADING_NO,"
-					" DECODE(A.ORDER_NO_1,NULL,B.ORDER_NO,A.ORDER_NO_1) AS ORDER_NO,"
+// DM8 适配 CHANGE-267:查询。空值搜索 DECODE 改为标准 CASE。
+// 改写原因：空值搜索 DECODE 改为标准 CASE,不依赖 NULL 相等匹配的未记载语义；依据 DM 官方文档,DM8 尚未实测。
+// 本共用分支面向 DM8,其他 DB_KIND 标签也会执行此 SQL;参数、结果列、条件与排序保持不变。
+// 原 SQL（完整保留）：
+				// sqlstr = " SELECT DECODE(TRIM(A.BILL_OF_LADING_NO),'',A.BILL_OF_LADING_NO_1,A.BILL_OF_LADING_NO) AS BILL_OF_LADING_NO,"
+					// " DECODE(A.ORDER_NO_1,NULL,B.ORDER_NO,A.ORDER_NO_1) AS ORDER_NO,"
+					// " A.OLD_ORDER_NO,A.PROD_CNAME,A.RED_FLAG,"
+					// " (CASE WHEN B.MAT_SHAPE_FLAG='7' THEN B.LAYERNO || B.ROWNO || B.COLUMN_NO ELSE B.LAYERNO || B.COLUMN_NO END) STOCK_PLACE_POSITION ,"
+					// " B.* "
+					// " FROM "+ table_name +" B ,(" + sqlstr1 + ") A WHERE B.MAT_NO = A.MAT_NO ";
+// DM8 SQL：
+				sqlstr = " SELECT CASE WHEN TRIM(A.BILL_OF_LADING_NO) IS NULL OR TRIM(A.BILL_OF_LADING_NO) = '' THEN A.BILL_OF_LADING_NO_1 ELSE A.BILL_OF_LADING_NO END AS BILL_OF_LADING_NO,"
+					" CASE WHEN A.ORDER_NO_1 IS NULL THEN B.ORDER_NO ELSE A.ORDER_NO_1 END AS ORDER_NO,"
 					" A.OLD_ORDER_NO,A.PROD_CNAME,A.RED_FLAG,"
 					" (CASE WHEN B.MAT_SHAPE_FLAG='7' THEN B.LAYERNO || B.ROWNO || B.COLUMN_NO ELSE B.LAYERNO || B.COLUMN_NO END) STOCK_PLACE_POSITION ,"
 					" B.* "
@@ -204,7 +226,14 @@ int  f_sm00_plan_mat(EIClass * bcls_rec, EIClass * bcls_ret, CDbConnection * con
 				}
 
 
-				sqlstr = " SELECT A.BILL_OF_LADING_NO_1 AS BILL_OF_LADING_NO,DECODE(A.ORDER_NO_1,NULL,B.ORDER_NO,A.ORDER_NO_1) AS ORDER_NO "
+// DM8 适配 CHANGE-268:查询。空值搜索 DECODE 改为标准 CASE。
+// 改写原因：空值搜索 DECODE 改为标准 CASE,不依赖 NULL 相等匹配的未记载语义；依据 DM 官方文档,DM8 尚未实测。
+// 本共用分支面向 DM8,其他 DB_KIND 标签也会执行此 SQL;参数、结果列、条件与排序保持不变。
+// 原 SQL（完整保留）：
+				// sqlstr = " SELECT A.BILL_OF_LADING_NO_1 AS BILL_OF_LADING_NO,DECODE(A.ORDER_NO_1,NULL,B.ORDER_NO,A.ORDER_NO_1) AS ORDER_NO "
+					// " ,A.OLD_ORDER_NO,A.PROD_CNAME,A.RED_FLAG,B.* ";
+// DM8 SQL：
+				sqlstr = " SELECT A.BILL_OF_LADING_NO_1 AS BILL_OF_LADING_NO,CASE WHEN A.ORDER_NO_1 IS NULL THEN B.ORDER_NO ELSE A.ORDER_NO_1 END AS ORDER_NO "
 					" ,A.OLD_ORDER_NO,A.PROD_CNAME,A.RED_FLAG,B.* ";
 				if (c_stock_place_no.Trim() != "")
 				{
